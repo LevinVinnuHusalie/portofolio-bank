@@ -1,6 +1,6 @@
 import { test, expect, Locator } from "@playwright/test";
 
-let heading: Locator, usernameInput: Locator, passwordInput: Locator, loginButton: Locator, userInfo: Locator, logoutButton: Locator, toogle: Locator, rememberCheckBox: Locator;
+let heading: Locator, usernameInput: Locator, passwordInput: Locator, loginButton: Locator, userInfo: Locator, logoutButton: Locator, toggle: Locator, rememberCheckBox: Locator;
 
 test.beforeEach("Initial Step", async ({ page }) => {
     usernameInput = page.getByTestId("username-input");
@@ -9,7 +9,7 @@ test.beforeEach("Initial Step", async ({ page }) => {
     userInfo = page.getByTestId("user-info");
     logoutButton = page.getByTestId("logout-button");
     heading = page.getByRole("heading", { name: "Welcome to SecureBank" });
-    toogle = page.getByTestId("toggle-password-btn");
+    toggle = page.getByTestId("toggle-password-btn");
     rememberCheckBox = page.getByTestId("remember-checkbox");
 
     await page.goto(`${process.env.BASE_URL}`);
@@ -59,7 +59,7 @@ test.describe("LoginPage Test Cases", () => {
         await passwordInput.fill("invalid");
 
         // Click password toogle to show passowrd
-        await toogle.click();
+        await toggle.click();
         // Assert value on username and password field
         await expect(usernameInput).toHaveValue("invalid");
         await expect(passwordInput).toHaveValue("invalid");
