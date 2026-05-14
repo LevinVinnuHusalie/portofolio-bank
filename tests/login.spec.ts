@@ -1,94 +1,114 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Locator } from "@playwright/test";
 
-test.beforeEach(async ({ page }) => {
+let heading: Locator, usernameInput: Locator, passwordInput: Locator, loginButton: Locator, userInfo: Locator, logoutButton: Locator, toogle: Locator, rememberCheckBox: Locator;
+
+test.beforeEach("Initial Step", async ({ page }) => {
+    usernameInput = page.getByTestId("username-input");
+    passwordInput = page.getByTestId("password-input");
+    loginButton = page.getByTestId("login-button");
+    userInfo = page.getByTestId("user-info");
+    logoutButton = page.getByTestId("logout-button");
+    heading = page.getByRole("heading", { name: "Welcome to SecureBank" });
+    toogle = page.getByTestId("toggle-password-btn");
+    rememberCheckBox = page.getByTestId("remember-checkbox");
+
     await page.goto(`${process.env.BASE_URL}`);
-
-    const heading = page.getByRole("heading", { name: "Welcome to SecureBank" });
     expect(heading).toHaveText("Welcome to SecureBank");
 });
 
-test("TC01. Successful login with admin credentials until logout", async ({ page }) => {
-    const usernameInput = page.getByTestId("username-input");
-    const passwordInput = page.getByTestId("password-input");
-    const loginButton = page.getByTestId("login-button");
+test.describe("LoginPage Test Cases", () => {
+    test("TC01. Successful login with admin credentials until logout", async ({ page }) => {
+        //Input admin username
+        await usernameInput.click();
+        await usernameInput.fill(`${process.env.ADMIN_USERNAME}`);
 
-    await usernameInput.click();
-    await usernameInput.fill(`${process.env.ADMIN_USERNAME}`);
+        //Input admin password
+        await passwordInput.click();
+        await passwordInput.fill(`${process.env.ADMIN_PASSWORD}`);
 
-    await passwordInput.click();
-    await passwordInput.fill(`${process.env.ADMIN_PASSWORD}`);
+        //Click login
+        await loginButton.click();
 
-    await loginButton.click();
+        // Assert page redirected to MainPage = Login success
+        await expect(page).toHaveURL(`${process.env.BASE_URL}/dashboard`);
+        //Assert user login with admin user
+        await expect(userInfo).toContainText("admin");
 
-    expect(page).toHaveURL(`${process.env.BASE_URL}/dashboard`);
+        //Intercept alert
+        page.once("dialog", (dialog) => {
+            dialog.accept();
+            expect(dialog.message()).toEqual("Are you sure you want to logout?");
+            expect(dialog.type()).toEqual("confirm");
+        });
 
-    const userInfo = page.getByTestId("user-info");
-    await expect(userInfo).toContainText("admin");
+        // Click logout
+        await logoutButton.click();
 
-    page.once("dialog", (dialog) => {
-        dialog.accept();
-        expect(dialog.message()).toEqual("Are you sure you want to logout?");
-        expect(dialog.type()).toEqual("confirm");
+        // Assert page redirected to LoginPage again = Logout success
+        expect(page).toHaveURL(`${process.env.BASE_URL}`);
+        expect(heading).toHaveText("Welcome to SecureBank");
     });
 
-    const logoutButton = page.getByTestId("logout-button");
-    await logoutButton.click();
+    test("TC02. Failed login with invalid credentials with password toogle", async ({ page }) => {
+        // Input invalid username
+        await usernameInput.click();
+        await usernameInput.fill("invalid");
 
-    expect(page).toHaveURL(`${process.env.BASE_URL}`);
-});
+        // Input invalid password
+        await passwordInput.click();
+        await passwordInput.fill("invalid");
 
-test("TC02. Failed login with invalid credentials with password toogle", async ({ page }) => {
-    const usernameInput = page.getByTestId("username-input");
-    const passwordInput = page.getByTestId("password-input");
-    const loginButton = page.getByTestId("login-button");
+        // Click password toogle to show passowrd
+        await toogle.click();
+        // Assert value on username and password field
+        await expect(usernameInput).toHaveValue("invalid");
+        await expect(passwordInput).toHaveValue("invalid");
 
-    await usernameInput.click();
-    await usernameInput.fill("invalid");
-    await expect(usernameInput).toHaveValue("invalid");
+        //Click login
+        await loginButton.click();
+        //Assert error message
+        await expect(page.getByTestId("login-alert")).toContainText("⚠️ Invalid username or password. Please try again.");
 
-    await passwordInput.click();
-    await passwordInput.fill("invalid");
-
-    const toogle = page.getByTestId("toggle-password-btn");
-    await toogle.click();
-    await expect(passwordInput).toHaveValue("invalid");
-
-    await loginButton.click();
-    await expect(page.getByTestId("login-alert")).toContainText("⚠️ Invalid username or password. Please try again.");
-
-    expect(page).toHaveURL(`${process.env.BASE_URL}`);
-});
-
-test("TC03. Login with viewer user with remember me checkbox", async ({ page }) => {
-    const usernameInput = page.getByTestId("username-input");
-    const passwordInput = page.getByTestId("password-input");
-    const loginButton = page.getByTestId("login-button");
-
-    await usernameInput.click();
-    await usernameInput.fill(`${process.env.VIEWER_USERNAME}`);
-
-    await passwordInput.click();
-    await passwordInput.fill(`${process.env.VIEWER_PASSWORD}`);
-
-    await page.getByTestId("remember-checkbox").click();
-
-    await loginButton.click();
-
-    expect(page).toHaveURL(`${process.env.BASE_URL}/dashboard`);
-
-    await expect(page.locator("#username-display")).toContainText("viewer");
-    await expect(page.getByTestId("viewer-badge")).toBeVisible();
-    await expect(page.getByTestId("viewer-badge")).toContainText("Read-only");
-
-    page.once("dialog", (dialog) => {
-        dialog.accept();
-        expect(dialog.message()).toEqual("Are you sure you want to logout?");
-        expect(dialog.type()).toEqual("confirm");
+        //Assert page is not redirected and still in LoginPage = Login failed
+        expect(page).toHaveURL(`${process.env.BASE_URL}`);
     });
 
-    const logoutButton = page.getByTestId("logout-button");
-    await logoutButton.click();
+    test("TC03. Login with viewer user with remember me checkbox", async ({ page }) => {
+        //Input viewer username
+        await usernameInput.click();
+        await usernameInput.fill(`${process.env.VIEWER_USERNAME}`);
 
-    await expect(usernameInput).toHaveValue(`${process.env.VIEWER_USERNAME}`);
-    await expect(passwordInput).toBeEmpty();
+        //Input viewer passwrod
+        await passwordInput.click();
+        await passwordInput.fill(`${process.env.VIEWER_PASSWORD}`);
+
+        //Checkec remember me checkbox
+        await page.getByTestId("remember-checkbox").click();
+
+        //Click login
+        await loginButton.click();
+
+        //Assert page is redirected to MainPage = Login success
+        expect(page).toHaveURL(`${process.env.BASE_URL}/dashboard`);
+
+        //Assert user login with viewer user
+        await expect(page.locator("#username-display")).toContainText("viewer");
+        await expect(page.getByTestId("viewer-badge")).toBeVisible();
+        await expect(page.getByTestId("viewer-badge")).toContainText("Read-only");
+
+        //Intercept alert
+        page.once("dialog", (dialog) => {
+            dialog.accept();
+            expect(dialog.message()).toEqual("Are you sure you want to logout?");
+            expect(dialog.type()).toEqual("confirm");
+        });
+
+        // Click logout
+        await logoutButton.click();
+
+        // Assert username is filled after checked rememberme checkbox
+        await expect(usernameInput).toHaveValue(`${process.env.VIEWER_USERNAME}`);
+        // Assert password is empty
+        await expect(passwordInput).toBeEmpty();
+    });
 });
