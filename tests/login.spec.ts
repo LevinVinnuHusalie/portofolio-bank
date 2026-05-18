@@ -1,114 +1,74 @@
-import { test, expect, Locator } from "@playwright/test";
+import { test } from "@playwright/test";
+import { LoginPage } from "../src/pages/LoginPage";
 
-let heading: Locator, usernameInput: Locator, passwordInput: Locator, loginButton: Locator, userInfo: Locator, logoutButton: Locator, toggle: Locator, rememberCheckBox: Locator;
+const adminUsername = `${process.env.ADMIN_USERNAME}`;
+const adminPassword = `${process.env.ADMIN_PASSWORD}`;
+const viewerUsername = `${process.env.VIEWER_USERNAME}`;
+const viewerPassword = `${process.env.VIEWER_PASSWORD}`;
 
 test.beforeEach("Initial Step", async ({ page }) => {
-    usernameInput = page.getByTestId("username-input");
-    passwordInput = page.getByTestId("password-input");
-    loginButton = page.getByTestId("login-button");
-    userInfo = page.getByTestId("user-info");
-    logoutButton = page.getByTestId("logout-button");
-    heading = page.getByRole("heading", { name: "Welcome to SecureBank" });
-    toggle = page.getByTestId("toggle-password-btn");
-    rememberCheckBox = page.getByTestId("remember-checkbox");
-
-    await page.goto(`${process.env.BASE_URL}`);
-    expect(heading).toHaveText("Welcome to SecureBank");
+    const loginPage = new LoginPage(page);
+    await loginPage.goToUrl(`${process.env.BASE_URL}`);
+    await loginPage.assertInLoginPage();
 });
 
 test.describe("LoginPage Test Cases", () => {
     test("TC01. Successful login with admin credentials until logout", async ({ page }) => {
-        //Input admin username
-        await usernameInput.click();
-        await usernameInput.fill(`${process.env.ADMIN_USERNAME}`);
-
-        //Input admin password
-        await passwordInput.click();
-        await passwordInput.fill(`${process.env.ADMIN_PASSWORD}`);
-
-        //Click login
-        await loginButton.click();
+        const loginPage = new LoginPage(page);
+        // Login with admin user
+        await loginPage.fillLoginFields(adminUsername, adminPassword);
+        await loginPage.assertLoginFields(adminUsername, adminPassword);
+        await loginPage.login();
 
         // Assert page redirected to MainPage = Login success
-        await expect(page).toHaveURL(`${process.env.BASE_URL}/dashboard`);
-        //Assert user login with admin user
-        await expect(userInfo).toContainText("admin");
+        await loginPage.assertAdminLoginSuccess();
 
-        //Intercept alert
-        page.once("dialog", (dialog) => {
-            dialog.accept();
-            expect(dialog.message()).toEqual("Are you sure you want to logout?");
-            expect(dialog.type()).toEqual("confirm");
-        });
-
-        // Click logout
-        await logoutButton.click();
+        // Logi=out
+        await loginPage.logout();
 
         // Assert page redirected to LoginPage again = Logout success
-        expect(page).toHaveURL(`${process.env.BASE_URL}`);
-        expect(heading).toHaveText("Welcome to SecureBank");
+        await loginPage.assertInLoginPage();
     });
 
     test("TC02. Failed login with invalid credentials with password toogle", async ({ page }) => {
-        // Input invalid username
-        await usernameInput.click();
-        await usernameInput.fill("invalid");
+        const loginPage = new LoginPage(page);
 
-        // Input invalid password
-        await passwordInput.click();
-        await passwordInput.fill("invalid");
+        // Login with invalid user
+        await loginPage.fillLoginFields("invalidUsername", "invalidPassword");
 
-        // Click password toogle to show passowrd
-        await toggle.click();
+        // Click password toogle to show password
+        await loginPage.click(loginPage.toggle); //will add visual assert in future
         // Assert value on username and password field
-        await expect(usernameInput).toHaveValue("invalid");
-        await expect(passwordInput).toHaveValue("invalid");
+        await loginPage.assertLoginFields("invalidUsername", "invalidPassword");
 
         //Click login
-        await loginButton.click();
+        await loginPage.login();
         //Assert error message
-        await expect(page.getByTestId("login-alert")).toContainText("⚠️ Invalid username or password. Please try again.");
+        await loginPage.assertText(loginPage.loginAlert, loginPage.alertMessage);
 
         //Assert page is not redirected and still in LoginPage = Login failed
-        expect(page).toHaveURL(`${process.env.BASE_URL}`);
+        await loginPage.assertInLoginPage();
     });
 
     test("TC03. Login with viewer user with remember me checkbox", async ({ page }) => {
-        //Input viewer username
-        await usernameInput.click();
-        await usernameInput.fill(`${process.env.VIEWER_USERNAME}`);
+        const loginPage = new LoginPage(page);
 
-        //Input viewer passwrod
-        await passwordInput.click();
-        await passwordInput.fill(`${process.env.VIEWER_PASSWORD}`);
-
-        //Checkec remember me checkbox
-        await page.getByTestId("remember-checkbox").click();
+        // Login with viewer user
+        await loginPage.fillLoginFields(viewerUsername, viewerPassword);
+        //Check remember me checkbox
+        await loginPage.click(loginPage.rememberCheckBox);
 
         //Click login
-        await loginButton.click();
+        await loginPage.login();
 
-        //Assert page is redirected to MainPage = Login success
-        expect(page).toHaveURL(`${process.env.BASE_URL}/dashboard`);
-
-        //Assert user login with viewer user
-        await expect(page.locator("#username-display")).toContainText("viewer");
-        await expect(page.getByTestId("viewer-badge")).toBeVisible();
-        await expect(page.getByTestId("viewer-badge")).toContainText("Read-only");
-
-        //Intercept alert
-        page.once("dialog", (dialog) => {
-            dialog.accept();
-            expect(dialog.message()).toEqual("Are you sure you want to logout?");
-            expect(dialog.type()).toEqual("confirm");
-        });
+        //Assert page is redirected to MainPage = Login success with viewer user
+        await loginPage.assertViewerLoginSuccess();
 
         // Click logout
-        await logoutButton.click();
+        await loginPage.logout();
 
         // Assert username is filled after checked rememberme checkbox
-        await expect(usernameInput).toHaveValue(`${process.env.VIEWER_USERNAME}`);
-        // Assert password is empty
-        await expect(passwordInput).toBeEmpty();
+        await loginPage.assertInLoginPage();
+        await loginPage.assertLoginFields(viewerUsername, "");
     });
 });
