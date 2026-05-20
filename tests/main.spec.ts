@@ -1,11 +1,9 @@
 import { test, expect, Locator } from "@playwright/test";
 
-let heading: Locator, usernameInput: Locator, passwordInput: Locator, loginButton: Locator, userInfo: Locator, logoutButton: Locator, toggle: Locator, rememberCheckBox: Locator;
-
 test.beforeEach("Authenticate", async ({ page }) => {
-    usernameInput = page.getByTestId("username-input");
-    passwordInput = page.getByTestId("password-input");
-    loginButton = page.getByTestId("login-button");
+    const usernameInput = page.getByTestId("username-input");
+    const passwordInput = page.getByTestId("password-input");
+    const loginButton = page.getByTestId("login-button");
 
     await page.goto(`${process.env.BASE_URL}`);
     //Input admin username
