@@ -57,7 +57,7 @@ export class AccountsPage {
     }
 
     async countAccountRow(amount: number) {
-        await expect(this.tableBody.locator(":scope > tr")).toHaveCount(amount);
+        await expect(this.tableBody.getByRole("row")).toHaveCount(amount);
     }
 
     async sortBy(option: string) {
