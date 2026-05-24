@@ -36,19 +36,19 @@ test.describe("AccountsPage Test Cases", () => {
         const account2 = "Primary Savings";
 
         // Assert initial account order
-        accountsPage.assertAccountsOrder(account1, account2);
+        await accountsPage.assertAccountsOrder(account1, account2);
 
         // Sort by date created and assert account order
         await accountsPage.sortBy("Date Created");
-        accountsPage.assertAccountsOrder(account2, account1);
+        await accountsPage.assertAccountsOrder(account2, account1);
 
         // Sort by account name and assert account order
         await accountsPage.sortBy("Account Name");
-        accountsPage.assertAccountsOrder(account1, account2);
+        await accountsPage.assertAccountsOrder(account1, account2);
 
         // Sort by balance and assert account order
         await accountsPage.sortBy("Balance");
-        accountsPage.assertAccountsOrder(account2, account1);
+        await accountsPage.assertAccountsOrder(account2, account1);
 
         // Filter by account type and assert filtered account is displayed
         await page.getByTestId("filter-type-select").click();
@@ -57,7 +57,7 @@ test.describe("AccountsPage Test Cases", () => {
 
         // Reset filter and assert account order = initial
         await page.getByTestId("reset-filters-button").click();
-        accountsPage.assertAccountsOrder(account1, account2);
+        await accountsPage.assertAccountsOrder(account1, account2);
 
         // Search account by name and assert the account is displayed
         await page.getByTestId("search-input").click();
@@ -124,7 +124,7 @@ test.describe("AccountsPage Test Cases", () => {
         // Assert second page is visible
         await expect(nextPage).toBeVisible();
         // Go to second page
-        await page.getByTestId("pagination-next").click();
+        await nextPage.click();
         // Assert the rest of accounts are displayed
         await accountsPage.countAccountRow(2);
     });
