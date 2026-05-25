@@ -23,26 +23,6 @@ export class TransactionsPage {
         this.accountFilter = page.getByTestId("filter-account-select");
     }
 
-    async login(username: string, password: string) {
-        const usernameInput = this.page.getByTestId("username-input");
-        const passwordInput = this.page.getByTestId("password-input");
-        const loginButton = this.page.getByTestId("login-button");
-
-        await this.page.goto(`${process.env.BASE_URL}`);
-        //Input admin username
-        await usernameInput.click();
-        await usernameInput.fill(username);
-
-        //Input admin password
-        await passwordInput.click();
-        await passwordInput.fill(password);
-
-        //Click login
-        await loginButton.click();
-
-        await this.page.getByTestId("nav-transactions").click();
-    }
-
     async prepareData(dateList: string[]) {
         const newTransactionButton = this.page.getByTestId("quick-new-transaction");
         const transactionTypeField = this.page.getByTestId("transaction-type-select");
@@ -96,6 +76,7 @@ export class TransactionsPage {
         await this.page
             .getByRole("button", { name: value })
             .or(this.page.getByRole("option", { name: value }))
+            .first()
             .click();
         await this.page.getByTestId("apply-filters-button").click();
         await this.countAccountRow(expected);

@@ -15,24 +15,6 @@ export class AccountsPage {
         return this.tableBody.getByRole("row").filter({ hasText: accountName });
     }
 
-    async login(username: string, password: string) {
-        const usernameInput = this.page.getByTestId("username-input");
-        const passwordInput = this.page.getByTestId("password-input");
-        const loginButton = this.page.getByTestId("login-button");
-
-        await this.page.goto(`${process.env.BASE_URL}`);
-        //Input admin username
-        await usernameInput.click();
-        await usernameInput.fill(username);
-
-        //Input admin password
-        await passwordInput.click();
-        await passwordInput.fill(password);
-
-        //Click login
-        await loginButton.click();
-    }
-
     async assertSummaryBar() {
         const summaryBar = this.page.getByTestId("accounts-summary-bar").locator(":scope > div");
         await expect(summaryBar).toHaveCount(4);

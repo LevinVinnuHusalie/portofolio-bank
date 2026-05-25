@@ -104,20 +104,6 @@ export class MainPage {
         return this.page.getByTestId(section);
     }
 
-    async login(url: string, username: string, password: string) {
-        await this.page.goto(url);
-        //Input admin username
-        await this.usernameInput.click();
-        await this.usernameInput.fill(username);
-
-        //Input admin password
-        await this.passwordInput.click();
-        await this.passwordInput.fill(password);
-
-        //Click login
-        await this.loginButton.click();
-    }
-
     async createNewAccount(accountName: string, accountType: string, balance: string) {
         await this.accountNameField.click();
         await this.accountNameField.fill(accountName);
@@ -166,19 +152,6 @@ export class MainPage {
             await expect(account).toBeVisible();
         }
     }
-
-    // async assertDragAndDropAccounts() {
-    //     // Assert first account
-    //     await expect(this.accounts.first()).toContainText("Primary Savings");
-    //     // Drag first account
-    //     await this.firstAccount.dragTo(this.dropZone);
-    //     // Assert first account is moved
-    //     await expect(this.accounts.nth(1)).toContainText("Primary Savings");
-    //     // Drag second account
-    //     await this.secondAccount.dragTo(this.dropZone);
-    //     // Assert second account is moved
-    //     await expect(this.accounts.nth(1)).toContainText("Checking Account");
-    // }
 
     async assertWizard(wizard: Locator, title: string, desc: string) {
         await expect(wizard).toBeVisible();

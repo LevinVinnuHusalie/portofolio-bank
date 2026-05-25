@@ -1,4 +1,4 @@
-import { test, expect} from "../src/fixtures/BankFixture";
+import { test, expect } from "../src/fixtures/BankFixture";
 
 test.describe("TransactionsPage Test Cases", () => {
     test("TC01. Validate TransactionPage skeleton", async ({ page, transactionsPage }) => {
