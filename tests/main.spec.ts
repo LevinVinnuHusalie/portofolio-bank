@@ -1,17 +1,7 @@
-import { test, expect } from "@playwright/test";
-import { MainPage } from "../src/pages/MainPage";
-
-const adminUsername = `${process.env.ADMIN_USERNAME}`;
-const adminPassword = `${process.env.ADMIN_PASSWORD}`;
-
-test.beforeEach("Authenticate", async ({ page }) => {
-    const mainPage = new MainPage(page);
-    mainPage.login(`${process.env.BASE_URL}`, adminUsername, adminPassword);
-});
+import { test, expect } from "../src/fixtures/BankFixture";
 
 test.describe("MainPage Test Cases", () => {
-    test("TC01. Checking Navbar and Summary Section", async ({ page }) => {
-        const mainPage = new MainPage(page);
+    test("TC01. Checking Navbar and Summary Section", async ({ page, mainPage }) => {
         // Assert navbar links are visible
         await expect(mainPage.dashboardNavbar).toBeVisible();
         await expect(mainPage.accountsNavbar).toBeVisible();
@@ -39,9 +29,7 @@ test.describe("MainPage Test Cases", () => {
         await expect(mainPage.transactionsCountCard).toContainText("Total Transactions");
     });
 
-    test("TC02. Quick Actions - Add Account", async ({ page }) => {
-        const mainPage = new MainPage(page);
-
+    test("TC02. Quick Actions - Add Account", async ({ page, mainPage }) => {
         // Assert Quick Actions heading
         await expect(mainPage.heading("Quick Actions")).toBeVisible();
         // Assert add account button visibility
@@ -58,9 +46,7 @@ test.describe("MainPage Test Cases", () => {
         await mainPage.assertNewAccount(mainPage.accountRowFromAccountName("Testing Account"), "Testing Account", "Credit", "$2,000.00");
     });
 
-    test("TC03. Quick Actions - New Transaction (deposit)", async ({ page }) => {
-        const mainPage = new MainPage(page);
-
+    test("TC03. Quick Actions - New Transaction (deposit)", async ({ mainPage }) => {
         // Assert new transaction button visibility
         await expect(mainPage.newTransactionButton).toBeVisible();
 
@@ -74,9 +60,7 @@ test.describe("MainPage Test Cases", () => {
         await mainPage.assertNewTransaction(mainPage.transactionRowFromDescription("New Transaction for Deposit Transaction"), "Deposit", "Primary Savings", "+$123.00", "$5,123.00", "New Transaction for Deposit Transaction");
     });
 
-    test("TC04. Quick Actions - New Transaction (Withdrawal)", async ({ page }) => {
-        const mainPage = new MainPage(page);
-
+    test("TC04. Quick Actions - New Transaction (Withdrawal)", async ({ mainPage }) => {
         // Click new transaction button
         await mainPage.newTransactionButton.click();
 
@@ -89,9 +73,7 @@ test.describe("MainPage Test Cases", () => {
         await mainPage.assertNewTransaction(mainPage.transactionRowFromDescription("New Transaction for Withdrawal Transaction"), "Withdrawal", "Checking Account", "-$456.00", "$2,044.00", "New Transaction for Withdrawal Transaction");
     });
 
-    test("TC05. Quick Actions - New Transaction (Transfer)", async ({ page }) => {
-        const mainPage = new MainPage(page);
-
+    test("TC05. Quick Actions - New Transaction (Transfer)", async ({ mainPage }) => {
         // Click new transaction button
         await mainPage.newTransactionButton.click();
 
@@ -106,18 +88,14 @@ test.describe("MainPage Test Cases", () => {
         await mainPage.assertNewTransaction(mainPage.transactionRowFromDescription("Transfer from Primary Savings"), "Deposit", "Checking Account", "+$200.00", "$2,700.00", "Transfer from Primary Savings");
     });
 
-    test("TC06. Quick Actions - View All Accounts", async ({ page }) => {
-        const mainPage = new MainPage(page);
-
+    test("TC06. Quick Actions - View All Accounts", async ({ page, mainPage }) => {
         // Assert view account button visibility and functionality
         await expect(mainPage.viewAccountButton).toBeVisible();
         await mainPage.viewAccountButton.click();
         await expect(page).toHaveURL(`${process.env.BASE_URL}/accounts`);
     });
 
-    test("TC07. Quick Stats Section", async ({ page }) => {
-        const mainPage = new MainPage(page);
-
+    test("TC07. Quick Stats Section", async ({ page, mainPage }) => {
         // Assert section and heading visibility
         await expect(mainPage.section("quick-stats-section")).toBeVisible();
         await expect(mainPage.heading("Quick Stats")).toBeVisible();
@@ -132,9 +110,7 @@ test.describe("MainPage Test Cases", () => {
         await expect(page.getByText("Withdrawals", { exact: true })).toBeVisible();
     });
 
-    test("TC08. Pinned Accounts Section", async ({ page }) => {
-        const mainPage = new MainPage(page);
-
+    test("TC08. Pinned Accounts Section", async ({ mainPage }) => {
         // Assert heading and paragraph
         await expect(mainPage.heading("Pinned Accounts")).toBeVisible();
         await expect(mainPage.section("pinned-accounts-section").locator(":scope > p")).toHaveText("Drag to reorder your pinned accounts.");
@@ -153,9 +129,7 @@ test.describe("MainPage Test Cases", () => {
         await expect(mainPage.dragableAccounts.nth(1)).toContainText("Checking Account");
     });
 
-    test("TC09. Recent Transactions Section", async ({ page }) => {
-        // const table = page.getByTestId("recent-transactions-table");
-        const mainPage = new MainPage(page);
+    test("TC09. Recent Transactions Section", async ({ mainPage }) => {
         const headerList = ["Date", "Type", "Account", "Amount", "Status"];
 
         // Assert heading visibility
@@ -166,9 +140,8 @@ test.describe("MainPage Test Cases", () => {
         await mainPage.assertTableHeader(mainPage.table, headerList);
     });
 
-    test("TC10. Account Overview Section", async ({ page }) => {
+    test("TC10. Account Overview Section", async ({ page, mainPage }) => {
         const cards = page.getByTestId("accounts-grid").locator(":scope > div");
-        const mainPage = new MainPage(page);
 
         // Assert heading visibility
         await expect(mainPage.heading("Accounts Overview")).toBeVisible();

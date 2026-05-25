@@ -1,22 +1,7 @@
-import { test, expect, Locator } from "@playwright/test";
-import { TransactionsPage } from "../src/pages/TransactionsPage";
-
-const adminUsername = `${process.env.ADMIN_USERNAME}`;
-const adminPassword = `${process.env.ADMIN_PASSWORD}`;
-
-test.beforeEach("Authenticate", async ({ page }) => {
-    const transactionsPage = new TransactionsPage(page);
-    const dateList = ["2026-01-15", "2026-02-05", "2026-02-12", "2026-03-03", "2026-03-24", "2026-04-02", "2026-04-05"];
-
-    await transactionsPage.login(adminUsername, adminPassword);
-
-    // Precondition: Create transactions with different dates
-    await transactionsPage.prepareData(dateList);
-});
+import { test, expect} from "../src/fixtures/BankFixture";
 
 test.describe("TransactionsPage Test Cases", () => {
-    test("TC01. Validate TransactionPage skeleton", async ({ page }) => {
-        const transactionsPage = new TransactionsPage(page);
+    test("TC01. Validate TransactionPage skeleton", async ({ page, transactionsPage }) => {
         // Assert filter section
         await expect(page.locator("#filters-section")).toBeVisible();
         // Assert transaction summary section
@@ -30,9 +15,7 @@ test.describe("TransactionsPage Test Cases", () => {
         await expect(page.locator("#transactions-table-wrapper")).toBeVisible();
     });
 
-    test("TC02. Transactions filter", async ({ page }) => {
-        const transactionsPage = new TransactionsPage(page);
-
+    test("TC02. Transactions filter", async ({ page, transactionsPage }) => {
         // Assert filter for From date
         await transactionsPage.filterTransactions(transactionsPage.dateFromFilter, "Wednesday, April 1st, 2026", 3);
 
@@ -50,8 +33,7 @@ test.describe("TransactionsPage Test Cases", () => {
         await transactionsPage.filterTransactions(transactionsPage.accountFilter, "Primary Savings", 4);
     });
 
-    test("TC03. Transactions Table Paging", async ({ page }) => {
-        const transactionsPage = new TransactionsPage(page);
+    test("TC03. Transactions Table Paging", async ({ page, transactionsPage }) => {
         const nextPage = page.getByTestId("pagination-page-2");
 
         // Assert table displays 8 transaction initially

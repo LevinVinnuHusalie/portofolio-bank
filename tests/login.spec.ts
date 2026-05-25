@@ -1,20 +1,13 @@
-import { test } from "@playwright/test";
-import { LoginPage } from "../src/pages/LoginPage";
+import { test } from "../src/fixtures/BankFixture";
 
 const adminUsername = `${process.env.ADMIN_USERNAME}`;
 const adminPassword = `${process.env.ADMIN_PASSWORD}`;
 const viewerUsername = `${process.env.VIEWER_USERNAME}`;
 const viewerPassword = `${process.env.VIEWER_PASSWORD}`;
 
-test.beforeEach("Initial Step", async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goToUrl(`${process.env.BASE_URL}`);
-    await loginPage.assertInLoginPage();
-});
 
 test.describe("LoginPage Test Cases", () => {
-    test("TC01. Successful login with admin credentials until logout", async ({ page }) => {
-        const loginPage = new LoginPage(page);
+    test("TC01. Successful login with admin credentials until logout", async ({ loginPage }) => {
         // Login with admin user
         await loginPage.fillLoginFields(adminUsername, adminPassword);
         await loginPage.assertLoginFields(adminUsername, adminPassword);
@@ -30,9 +23,7 @@ test.describe("LoginPage Test Cases", () => {
         await loginPage.assertInLoginPage();
     });
 
-    test("TC02. Failed login with invalid credentials with password toogle", async ({ page }) => {
-        const loginPage = new LoginPage(page);
-
+    test("TC02. Failed login with invalid credentials with password toogle", async ({ loginPage }) => {
         // Login with invalid user
         await loginPage.fillLoginFields("invalidUsername", "invalidPassword");
 
@@ -50,9 +41,7 @@ test.describe("LoginPage Test Cases", () => {
         await loginPage.assertInLoginPage();
     });
 
-    test("TC03. Login with viewer user with remember me checkbox", async ({ page }) => {
-        const loginPage = new LoginPage(page);
-
+    test("TC03. Login with viewer user with remember me checkbox", async ({ loginPage }) => {
         // Login with viewer user
         await loginPage.fillLoginFields(viewerUsername, viewerPassword);
         //Check remember me checkbox

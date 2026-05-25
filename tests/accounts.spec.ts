@@ -1,20 +1,8 @@
-import { test, expect } from "@playwright/test";
-import { AccountsPage } from "../src/pages/AccountsPage";
+import { test, expect } from "../src/fixtures/BankFixture";
 
-const adminUsername = `${process.env.ADMIN_USERNAME}`;
-const adminPassword = `${process.env.ADMIN_PASSWORD}`;
-
-test.beforeEach("Authenticate", async ({ page }) => {
-    const accountsPage = new AccountsPage(page);
-    await accountsPage.login(adminUsername, adminPassword);
-
-    await page.getByTestId("nav-accounts").click();
-});
 
 test.describe("AccountsPage Test Cases", () => {
-    test("TC01. Validate AccountPage Skeleton", async ({ page }) => {
-        const accountsPage = new AccountsPage(page);
-
+    test("TC01. Validate AccountPage Skeleton", async ({ page, accountsPage }) => {
         // Assert summary section visibilty
         await accountsPage.assertSummaryBar();
 
@@ -30,8 +18,7 @@ test.describe("AccountsPage Test Cases", () => {
         await accountsPage.countAccountRow(2);
     });
 
-    test("TC02. Accounts Filter", async ({ page }) => {
-        const accountsPage = new AccountsPage(page);
+    test("TC02. Accounts Filter", async ({ page, accountsPage }) => {
         const account1 = "Checking Account";
         const account2 = "Primary Savings";
 
@@ -65,8 +52,7 @@ test.describe("AccountsPage Test Cases", () => {
         await accountsPage.assertAccountsAfterFilter("Checking Account");
     });
 
-    test("TC03. Account Edit Action", async ({ page }) => {
-        const accountsPage = new AccountsPage(page);
+    test("TC03. Account Edit Action", async ({ page, accountsPage }) => {
         const editAccountWizard = page.getByTestId("account-modal");
 
         // Click edit account button
@@ -91,9 +77,7 @@ test.describe("AccountsPage Test Cases", () => {
         await accountsPage.countAccountRow(2);
     });
 
-    test("TC04. Account Delete Action", async ({ page }) => {
-        const accountsPage = new AccountsPage(page);
-
+    test("TC04. Account Delete Action", async ({ page, accountsPage }) => {
         // Assert initial condition = 2 accounts
         await accountsPage.countAccountRow(2);
         // Click delete button
@@ -104,8 +88,7 @@ test.describe("AccountsPage Test Cases", () => {
         await expect(accountsPage.tableBody.locator(":scope > tr")).not.toContainText("Checking Account");
     });
 
-    test("TC05. Check table paging", async ({ page }) => {
-        const accountsPage = new AccountsPage(page);
+    test("TC05. Check table paging", async ({ page, accountsPage }) => {
         const nextPage = page.getByTestId("pagination-page-2");
         // Precondition: Create 5 accounts
         await accountsPage.prepareAccounts(5);
