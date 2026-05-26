@@ -115,7 +115,7 @@ test.describe("MainPage Test Cases", () => {
         await expect(mainPage.heading("Pinned Accounts")).toBeVisible();
         await expect(mainPage.section("pinned-accounts-section").locator(":scope > p")).toHaveText("Drag to reorder your pinned accounts.");
 
-        mainPage.assertAllDragableAccounts();
+        await mainPage.assertAllDragableAccounts();
 
         // Assert first account
         await expect(mainPage.dragableAccounts.first()).toContainText("Primary Savings");
