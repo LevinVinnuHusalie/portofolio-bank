@@ -1,4 +1,5 @@
 import { expect, Locator, Page } from "@playwright/test";
+import { UIMessages, AppConstants } from "../config";
 
 export class LoginPage {
     readonly page: Page;
@@ -12,9 +13,9 @@ export class LoginPage {
     readonly rememberCheckBox: Locator;
     readonly loginAlert: Locator;
     readonly viewerBadge: Locator;
-    readonly alertMessage = "⚠️ Invalid username or password. Please try again.";
-    readonly headingText = "Welcome to SecureBank";
-    readonly mainPageUrl = `${process.env.BASE_URL}/dashboard`;
+    readonly alertMessage = UIMessages.Login.ERROR_MESSAGE;
+    readonly headingText = UIMessages.Login.PAGE_HEADING;
+    readonly mainPageUrl = AppConstants.URLs.DASHBOARD_PAGE;
 
     constructor(page: Page) {
         this.page = page;
@@ -53,8 +54,8 @@ export class LoginPage {
     async logout() {
         this.page.once("dialog", (dialog) => {
             dialog.accept();
-            expect(dialog.message()).toEqual("Are you sure you want to logout?");
-            expect(dialog.type()).toEqual("confirm");
+            expect(dialog.message()).toEqual(UIMessages.Login.LOGOUT_CONFIRMATION_MESSAGE);
+            expect(dialog.type()).toEqual(UIMessages.Login.LOGOUT_CONFIRMATION_TYPE);
         });
 
         await this.logoutButton.click();
@@ -69,19 +70,19 @@ export class LoginPage {
     }
 
     async assertInLoginPage() {
-        await expect(this.page).toHaveURL(`${process.env.BASE_URL}`);
+        await expect(this.page).toHaveURL(AppConstants.URLs.LOGIN_PAGE);
         this.assertText(this.heading, this.headingText);
     }
 
     async assertAdminLoginSuccess() {
         await expect(this.page).toHaveURL(this.mainPageUrl);
-        await this.assertText(this.userInfo, "admin");
+        await this.assertText(this.userInfo, UIMessages.Login.USER_ROLE_ADMIN);
     }
 
     async assertViewerLoginSuccess() {
         await expect(this.page).toHaveURL(this.mainPageUrl);
-        await this.assertText(this.userInfo, "viewer");
+        await this.assertText(this.userInfo, UIMessages.Login.USER_ROLE_VIEWER);
         await expect(this.viewerBadge).toBeVisible();
-        await expect(this.viewerBadge).toContainText("Read-only");
+        await expect(this.viewerBadge).toContainText(UIMessages.Login.VIEWER_BADGE_TEXT);
     }
 }

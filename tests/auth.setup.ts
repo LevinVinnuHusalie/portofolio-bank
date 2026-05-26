@@ -1,13 +1,11 @@
 import { test as setup, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
+import { CredentialsManager, AppConstants } from "../src/config";
 
 const authDir = path.join(__dirname, "../playwright/.auth");
 const authFile = path.join(authDir, "user.json");
 const sessionFile = path.join(authDir, "session.json");
-
-const adminUsername = `${process.env.ADMIN_USERNAME}`;
-const adminPassword = `${process.env.ADMIN_PASSWORD}`;
 
 // Ensure auth directory exists
 if (!fs.existsSync(authDir)) {
@@ -19,19 +17,19 @@ setup("Authentication", async ({ page }) => {
     const passwordInput = page.getByTestId("password-input");
     const loginButton = page.getByTestId("login-button");
 
-    await page.goto(`${process.env.BASE_URL}`);
+    await page.goto(AppConstants.URLs.LOGIN_PAGE);
     //Input admin username
     await usernameInput.click();
-    await usernameInput.fill(adminUsername);
+    await usernameInput.fill(CredentialsManager.ADMIN.username);
 
     //Input admin password
     await passwordInput.click();
-    await passwordInput.fill(adminPassword);
+    await passwordInput.fill(CredentialsManager.ADMIN.password);
 
     //Click login
     await loginButton.click();
 
-    await expect(page).toHaveURL(`${process.env.BASE_URL}/dashboard`);
+    await expect(page).toHaveURL(AppConstants.URLs.DASHBOARD_PAGE);
     await expect(page.getByTestId("nav-dashboard")).toBeVisible();
 
     await page.context().storageState({ path: authFile });

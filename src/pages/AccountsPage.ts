@@ -1,4 +1,5 @@
 import { expect, Locator, Page } from "@playwright/test";
+import { AppConstants, UIMessages, TestData } from "../config";
 
 export class AccountsPage {
     readonly table: Locator;
@@ -25,7 +26,7 @@ export class AccountsPage {
     }
 
     async assertAccountTable(headerList: string[]) {
-        await expect(this.page.getByRole("heading", { name: "Your Bank Accounts" })).toBeVisible();
+        await expect(this.page.getByRole("heading", { name: UIMessages.Headings.YOUR_BANK_ACCOUNTS })).toBeVisible();
         await expect(this.table).toBeVisible();
         for (const header of headerList) {
             await expect(this.page.getByRole("columnheader", { name: header })).toBeVisible();
@@ -87,7 +88,7 @@ export class AccountsPage {
             await accountNameField.click();
             await accountNameField.fill(`Testing Account ${index}`);
             await accountTypeField.click();
-            await this.page.getByRole("option", { name: "Credit Card" }).click();
+            await this.page.getByRole("option", { name: TestData.Accounts.ACCOUNT_TYPE_CREDIT_CARD }).click();
             await balanceField.click();
             await balanceField.fill("2000");
             await saveAccountButton.click();

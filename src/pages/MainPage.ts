@@ -1,10 +1,7 @@
 import { expect, Locator, Page } from "@playwright/test";
+import { UIMessages } from "../config";
 
 export class MainPage {
-    readonly page: Page;
-    readonly usernameInput: Locator;
-    readonly passwordInput: Locator;
-    readonly loginButton: Locator;
     readonly dashboardNavbar: Locator;
     readonly transactionsNavbar: Locator;
     readonly accountsNavbar: Locator;
@@ -25,23 +22,16 @@ export class MainPage {
     readonly transactionAmountField: Locator;
     readonly transactionDescriptionField: Locator;
     readonly submitTransactionButton: Locator;
-    readonly newTransactionRecord: Locator;
     readonly notification: Locator;
     readonly toAccountField: Locator;
     readonly viewAccountButton: Locator;
-    readonly quickStatsSection: Locator;
-    readonly quickStatsHeading: Locator;
     readonly chart: Locator;
     readonly dragableAccounts: Locator;
     readonly dropZone: Locator;
     readonly table: Locator;
 
-    constructor(page: Page) {
+    constructor(readonly page: Page) {
         this.page = page;
-        //Login
-        this.usernameInput = page.getByTestId("username-input");
-        this.passwordInput = page.getByTestId("password-input");
-        this.loginButton = page.getByTestId("login-button");
         // Navbar
         this.dashboardNavbar = page.getByTestId("nav-dashboard");
         this.accountsNavbar = page.getByTestId("nav-accounts");
@@ -67,13 +57,10 @@ export class MainPage {
         this.transactionAmountField = page.getByTestId("transaction-amount-input");
         this.transactionDescriptionField = page.getByTestId("transaction-description-input");
         this.submitTransactionButton = page.getByTestId("submit-transaction-button");
-        this.newTransactionRecord = page.getByRole("row").filter({ has: page.getByTestId("transaction-amount").filter({ hasText: "+$123.00" }) });
         this.notification = page.getByRole("region", { name: "Notifications alt+T" }).getByRole("listitem");
         // View accounts
         this.viewAccountButton = page.getByTestId("quick-view-accounts");
         // Quick Stats section
-        this.quickStatsSection = page.getByTestId("quick-stats-section");
-        this.quickStatsHeading = page.getByRole("heading", { name: "Quick Stats" });
         this.chart = page.getByTestId("quick-stats-chart");
         // Pinned Accounts section
         this.dragableAccounts = page.locator('[data-testid^="draggable-account-id_"]');
@@ -171,7 +158,7 @@ export class MainPage {
         await expect(locator.getByTestId("account-name")).toContainText(accountName);
         await expect(locator.getByTestId("account-type")).toContainText(accountType);
         await expect(locator.getByTestId("account-balance")).toContainText(balance);
-        await expect(locator.getByTestId("account-status")).toContainText("Active");
+        await expect(locator.getByTestId("account-status")).toContainText(UIMessages.Status.ACTIVE);
     }
 
     async assertNewTransaction(locator: Locator, transactionType: string, fromAccount: string, amount: string, balanceAfter: string, description: string) {
@@ -181,6 +168,6 @@ export class MainPage {
         await expect(locator.getByTestId("transaction-amount")).toContainText(amount);
         await expect(locator.getByTestId("balance-after")).toContainText(balanceAfter);
         await expect(locator.getByTestId("transaction-description")).toContainText(description);
-        await expect(this.notification).toContainText("Transaction completed successfully!");
+        await expect(this.notification).toContainText(UIMessages.Status.TRANSACTION_SUCCESS);
     }
 }

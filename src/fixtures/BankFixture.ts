@@ -3,7 +3,27 @@ import { LoginPage } from "../pages/LoginPage";
 import { MainPage } from "../pages/MainPage";
 import { AccountsPage } from "../pages/AccountsPage";
 import { TransactionsPage } from "../pages/TransactionsPage";
+import { AppConstants, TestData } from "../config";
 import fs from "fs";
+import path from "path";
+
+/**
+ * Load session storage safely with fallback
+ */
+function loadSessionStorage(): Record<string, string> {
+    const sessionFilePath = path.join(__dirname, "../../playwright/.auth/session.json");
+
+    try {
+        if (fs.existsSync(sessionFilePath)) {
+            return JSON.parse(fs.readFileSync(sessionFilePath, "utf-8"));
+        }
+        console.warn("⚠️  Session storage file not found. Running auth setup first.");
+        return {};
+    } catch (error) {
+        console.warn("⚠️  Failed to load session storage. Running auth setup first.", error);
+        return {};
+    }
+}
 
 export const test = base.extend<{
     loginPage: LoginPage;
@@ -12,21 +32,24 @@ export const test = base.extend<{
     transactionsPage: TransactionsPage;
 }>({
     context: async ({ browser }, use) => {
-        const sessionStorage = JSON.parse(fs.readFileSync("playwright/.auth/session.json", "utf-8"));
+        const sessionStorage = loadSessionStorage();
+        const storageStatePath = path.join(__dirname, "../../playwright/.auth/user.json");
 
         const context = await browser.newContext({
-            storageState: "playwright/.auth/user.json",
+            storageState: fs.existsSync(storageStatePath) ? storageStatePath : undefined,
         });
 
-        await context.addInitScript((storage) => {
-            for (const [key, value] of Object.entries(storage)) {
-                window.sessionStorage.setItem(key, value as string);
-            }
-        }, sessionStorage);
+        if (Object.keys(sessionStorage).length > 0) {
+            await context.addInitScript((storage) => {
+                for (const [key, value] of Object.entries(storage)) {
+                    window.sessionStorage.setItem(key, value as string);
+                }
+            }, sessionStorage);
+        }
 
         await use(context);
 
-        await context.close();
+        // await context.close();
     },
     page: async ({ context }, use) => {
         const page = await context.newPage();
@@ -36,24 +59,22 @@ export const test = base.extend<{
         const context = await browser.newContext();
         const page = await context.newPage();
         const loginPage = new LoginPage(page);
-        await loginPage.goToUrl(`${process.env.BASE_URL}`);
+        await loginPage.goToUrl(AppConstants.URLs.LOGIN_PAGE);
         await loginPage.assertInLoginPage();
         await use(loginPage);
     },
     mainPage: async ({ page }, use) => {
-        await page.goto(`${process.env.BASE_URL}`);
+        await page.goto(AppConstants.URLs.DASHBOARD_PAGE);
         await use(new MainPage(page));
     },
     accountsPage: async ({ page }, use) => {
-        await page.goto(`${process.env.BASE_URL}`);
+        await page.goto(AppConstants.URLs.ACCOUNTS_PAGE);
         await page.getByTestId("nav-accounts").click();
         await use(new AccountsPage(page));
     },
     transactionsPage: async ({ page }, use) => {
         const transactionsPage = new TransactionsPage(page);
-        const dateList = ["2026-01-15", "2026-02-05", "2026-02-12", "2026-03-03", "2026-03-24", "2026-04-02", "2026-04-05"];
-        await page.goto(`${process.env.BASE_URL}`);
-        await transactionsPage.prepareData(dateList);
+        await page.goto(AppConstants.URLs.DASHBOARD_PAGE);
         await use(transactionsPage);
     },
 });

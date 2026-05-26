@@ -1,16 +1,11 @@
 import { test } from "../src/fixtures/BankFixture";
-
-const adminUsername = `${process.env.ADMIN_USERNAME}`;
-const adminPassword = `${process.env.ADMIN_PASSWORD}`;
-const viewerUsername = `${process.env.VIEWER_USERNAME}`;
-const viewerPassword = `${process.env.VIEWER_PASSWORD}`;
-
+import { CredentialsManager } from "../src/config";
 
 test.describe("LoginPage Test Cases", () => {
     test("TC01. Successful login with admin credentials until logout", async ({ loginPage }) => {
         // Login with admin user
-        await loginPage.fillLoginFields(adminUsername, adminPassword);
-        await loginPage.assertLoginFields(adminUsername, adminPassword);
+        await loginPage.fillLoginFields(CredentialsManager.ADMIN.username, CredentialsManager.ADMIN.password);
+        await loginPage.assertLoginFields(CredentialsManager.ADMIN.username, CredentialsManager.ADMIN.password);
         await loginPage.login();
 
         // Assert page redirected to MainPage = Login success
@@ -25,7 +20,7 @@ test.describe("LoginPage Test Cases", () => {
 
     test("TC02. Failed login with invalid credentials with password toogle", async ({ loginPage }) => {
         // Login with invalid user
-        await loginPage.fillLoginFields("invalidUsername", "invalidPassword");
+        await loginPage.fillLoginFields(CredentialsManager.INVALID.username, CredentialsManager.INVALID.password);
 
         // Click password toogle to show password
         await loginPage.click(loginPage.toggle); //will add visual assert in future
@@ -43,7 +38,7 @@ test.describe("LoginPage Test Cases", () => {
 
     test("TC03. Login with viewer user with remember me checkbox", async ({ loginPage }) => {
         // Login with viewer user
-        await loginPage.fillLoginFields(viewerUsername, viewerPassword);
+        await loginPage.fillLoginFields(CredentialsManager.VIEWER.username, CredentialsManager.VIEWER.password);
         //Check remember me checkbox
         await loginPage.click(loginPage.rememberCheckBox);
 
@@ -58,6 +53,6 @@ test.describe("LoginPage Test Cases", () => {
 
         // Assert username is filled after checked rememberme checkbox
         await loginPage.assertInLoginPage();
-        await loginPage.assertLoginFields(viewerUsername, "");
+        await loginPage.assertLoginFields(CredentialsManager.VIEWER.username, "");
     });
 });
