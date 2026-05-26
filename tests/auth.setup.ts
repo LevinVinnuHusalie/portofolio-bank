@@ -2,10 +2,17 @@ import { test as setup, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 
-const authFile = path.join(__dirname, "../playwright/.auth/user.json");
+const authDir = path.join(__dirname, "../playwright/.auth");
+const authFile = path.join(authDir, "user.json");
+const sessionFile = path.join(authDir, "session.json");
 
 const adminUsername = `${process.env.ADMIN_USERNAME}`;
 const adminPassword = `${process.env.ADMIN_PASSWORD}`;
+
+// Ensure auth directory exists
+if (!fs.existsSync(authDir)) {
+    fs.mkdirSync(authDir, { recursive: true });
+}
 
 setup("Authentication", async ({ page }) => {
     const usernameInput = page.getByTestId("username-input");
@@ -41,5 +48,11 @@ setup("Authentication", async ({ page }) => {
         return json;
     });
 
-    fs.writeFileSync("playwright/.auth/session.json", JSON.stringify(sessionStorage, null, 2));
+    try {
+        fs.writeFileSync(sessionFile, JSON.stringify(sessionStorage, null, 2));
+        console.log("✓ Session storage saved successfully");
+    } catch (error) {
+        console.error("Error saving session storage:", error);
+        throw error;
+    }
 });
