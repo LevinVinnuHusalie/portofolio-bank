@@ -35,7 +35,7 @@ pipeline {
 
         stage('Run Automation Test') {
             steps {
-                bat 'npx playwright test'
+                bat 'npx playwright test --project=chromium --workers=1'
             }
         }
     }
